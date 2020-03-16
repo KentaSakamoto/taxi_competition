@@ -1,0 +1,112 @@
+---
+title: "RandomForest"
+author: "Kenta Sakamoto"
+date: "2020/1/19"
+output: html_document
+---
+
+# 病院周辺での乗車数に影響のある変数を見つける
+
+```{r}
+
+data <- read.csv("../dataset/data_for_factor_analyze.csv",row.names = 1)
+rownames(data) <- data$hospital
+colnames(data) <- c("病院","メッシュコード","2016-11-04","2016-11-05","2016-11-06","2016-11-07","2016-11-08","2016-11-09","保育園","幼稚園","小学校","中学校","育成室","児童館","地域子育て支援拠点","キッズルーム","子ども乳幼児ショートステイ","病児病後児保育ルーム","歯科診療所","施術所","薬局","高齢者あんしん相談センター","地域密着型サービス事業所","文京福祉センター","緊急避難場所避難所","土のうステーション","区立公園","区内消防署","文京区管理橋梁","区内公衆便所","AED設置箇所一覧")
+
+```
+
+```{r}
+
+# tdata <- t(data)
+# tdata <- as.data.frame(tdata)
+# 
+# tokyoikashika <- tdata$東京医科歯科大学医学部附属病院
+# tokyoigakubu <- tdata$東京大学医学部附属病院
+# toritukomairi <- tdata$東京都立駒込病院
+# toutobunkyo <- tdata$東都文京病院
+# juntendo <- tdata$順天堂大学医学部附属順天堂医院
+# nihonika <- tdata$日本医科大学付属病院
+# tokyokensei <- tdata$東京健生病院
+# 
+# tokyoikashika <- as.data.frame(tokyoikashika)
+# tokyoigakubu <- as.data.frame(tokyoigakubu)
+# toritukomairi <- as.data.frame(toritukomairi)
+# toutobunkyo <- as.data.frame(toutobunkyo)
+# juntendo <- as.data.frame(juntendo)
+# nihonika <- as.data.frame(nihonika)
+# tokyokensei <- as.data.frame(tokyokensei)
+
+```
+
+```{r}
+
+Rideon20161104 <- data[,c(-1,-2,-4,-5,-6,-7,-8)]
+Rideon20161105 <- data[,c(-1,-2,-4,-5,-6,-7,-8)]
+Rideon20161106 <- data[,c(-1,-2,-4,-5,-6,-7,-8)]
+Rideon20161107 <- data[,c(-1,-2,-4,-5,-6,-7,-8)]
+Rideon20161108 <- data[,c(-1,-2,-4,-5,-6,-7,-8)]
+Rideon20161109 <- data[,c(-1,-2,-4,-5,-6,-7,-8)]
+
+```
+
+```{r}
+
+# tokyoikashika <- tokyoikashika[c(-1,-2,-4,-5,-6,-7),]
+# tokyoigakubu <- tokyoigakubu[c(-1,-2,-4,-5,-6,-7),]
+# toritukomairi <- toritukomairi[c(-1,-2,-4,-5,-6,-7),]
+# toutobunkyo <- toutobunkyo[c(-1,-2,-4,-5,-6,-7),]
+# juntendo <- juntendo[c(-1,-2,-4,-5,-6,-7),]
+# nihonika <- nihonika[c(-1,-2,-4,-5,-6,-7),]
+# tokyokensei <- tokyokensei[c(-1,-2,-4,-5,-6,-7),]
+# 
+# tokyoikashika <- as.data.frame(tokyoikashika)
+# tokyoigakubu <- as.data.frame(tokyoigakubu)
+# toritukomairi <- as.data.frame(toritukomairi)
+# toutobunkyo <- as.data.frame(toutobunkyo)
+# juntendo <- as.data.frame(juntendo)
+# nihonika <- as.data.frame(nihonika)
+# tokyokensei <- as.data.frame(tokyokensei)
+
+```
+
+# ランダムフォレストの実装
+
+```{r}
+
+library(randomForest)
+
+Rideon20161104rf <- randomForest(Rideon20161104$`2016-11-04` ~ ., data = Rideon20161104,na.action = "na.omit")
+
+Rideon20161105rf <- randomForest(Rideon20161105$`2016-11-05` ~ ., data = Rideon20161105,na.action = "na.omit")
+
+Rideon20161106rf <- randomForest(Rideon20161106$`2016-11-06` ~ ., data = Rideon20161106,na.action = "na.omit")
+
+Rideon20161107rf <- randomForest(Rideon20161107$`2016-11-07` ~ ., data = Rideon20161107,na.action = "na.omit")
+
+Rideon20161108rf <- randomForest(Rideon20161108$`2016-11-08` ~ ., data = Rideon20161108,na.action = "na.omit")
+
+Rideon20161109rf <- randomForest(Rideon20161109$`2016-11-09` ~ ., data = Rideon20161109,na.action = "na.omit")
+
+```
+
+```{r}
+
+Rideon20161104rf$importance
+varImpPlot(Rideon20161104rf)
+
+Rideon20161105rf$importance
+varImpPlot(Rideon20161105rf)
+
+Rideon20161106rf$importance
+varImpPlot(Rideon20161106rf)
+
+Rideon20161107rf$importance
+varImpPlot(Rideon20161107rf)
+
+Rideon20161108rf$importance
+varImpPlot(Rideon20161108rf)
+
+Rideon20161109rf$importance
+varImpPlot(Rideon20161109rf)
+
+```

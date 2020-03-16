@@ -1,0 +1,51 @@
+---
+title: "FlagData"
+author: "Kenta Sakamoto"
+date: "2020/1/18"
+output: html_document
+---
+
+```{r}
+source("http://www.fttsus.jp/worldmesh/R/worldmesh.R")
+sejutsusyo <- read.csv("../data/sejutsusyo.csv",header = T,row.names = 1)
+shikashinryojo <- read.csv("../data/shikashinryojo.csv",header = T,row.names = 1)
+shinryojo <- read.csv("../data/shinryojo.csv",header = T,row.names = 1)
+yakkyoku <- read.csv("../data/yakkyoku.csv",header = T,row.names = 1)
+
+mesh1 <- vector()
+mesh2 <- vector()
+mesh3 <- vector()
+mesh4 <- vector()
+
+for(i in 1:nrow(sejutsusyo)) {
+  mesh1[i] <- cal_meshcode(sejutsusyo[i,8],sejutsusyo[i,9]) # lat,lngの順
+}
+
+for(i in 1:nrow(shikashinryojo)) {
+  mesh2[i] <- cal_meshcode(shikashinryojo[i,8],shikashinryojo[i,9]) # lat,lngの順
+}
+
+for(i in 1:nrow(shinryojo)) {
+  mesh3[i] <- cal_meshcode(shinryojo[i,8],shinryojo[i,9]) # lat,lngの順
+}
+
+for(i in 1:nrow(yakkyoku)) {
+  mesh4[i] <- cal_meshcode(yakkyoku[i,8],yakkyoku[i,9]) # lat,lngの順
+}
+
+mesh1 <- as.data.frame(mesh1)
+mesh2 <- as.data.frame(mesh2)
+mesh3 <- as.data.frame(mesh3)
+mesh4 <- as.data.frame(mesh4)
+
+sejutsusyo <- cbind(sejutsusyo,mesh1)
+shikashinryojo <- cbind(shikashinryojo,mesh2)
+shinryojo <- cbind(shinryojo,mesh3)
+yakkyoku <- cbind(yakkyoku,mesh4)
+
+write.csv(sejutsusyo,file = "../data/sejutsusyo2.csv")
+write.csv(shikashinryojo,file = "../data/shikashinryojo2.csv")
+write.csv(shinryojo,file = "../data/shinryojo2.csv")
+write.csv(yakkyoku,file = "../data/yakkyoku2.csv")
+```
+

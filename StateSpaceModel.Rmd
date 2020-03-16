@@ -1,0 +1,132 @@
+---
+title: "StateSpaceModel"
+author: "Kenta Sakamoto"
+date: "2020/1/18"
+output: html_document
+---
+
+# 状態空間モデルを用いて乗車数の予測を行う
+
+## データ加工
+```{r}
+hos <- read.csv("../data/bunkyo_hos.csv",row.names = 1)
+```
+
+```{r}
+data <- data.frame(hos$病院名,hos$X1104,hos$X1105,hos$X1106,hos$X1107,hos$X1108,hos$X1109)
+tdata <- t(data)
+tdata <- as.data.frame(tdata)
+tdata <- tdata[-1,]
+colnames(tdata) <- c("東京医科歯科大学医学部附属病院","東京大学医学部附属病院","東京都立駒込病院","東都文京病院","順天堂大学医学部附属順天堂医院","日本医科大学付属病院","東京健生病院")
+rownames(tdata) <- c("11/04","11/05","11/06","11/07","11/08","11/09")
+# date <- c("2016-11-04","2016-11-05","2016-11-06","2016-11-07","2016-11-08","2016-11-09")
+# date <- as.POSIXct(date)
+# tdata <- cbind(date,tdata)
+```
+
+```{r}
+# date <- c("2016-11-04","2016-11-05","2016-11-06","2016-11-07","2016-11-08","2016-11-09")
+# tokyoikashika <- tdata$東京医科歯科大学医学部附属病院
+# tokyo <- tdata$東京大学医学部附属病院
+# komairi <- tdata$東京都立駒込病院
+# bunkyo <- tdata$東都文京病院
+# juntendo <- tdata$日本医科大学付属病院
+# keisho <- tdata$東京健生病院
+```
+
+```{r}
+# tokyoikashika <- as.data.frame(tokyoikashika)
+# tokyoikashika <- cbind(date,tokyoikashika)
+# 
+# tokyo <- as.data.frame(tokyo)
+# tokyo <- cbind(date,tokyo)
+# 
+# komairi <- as.data.frame(komairi)
+# komairi <- cbind(date,komairi)
+# 
+# bunkyo <- as.data.frame(bunkyo)
+# bunkyo <- cbind(date,bunkyo)
+# 
+# juntendo <- as.data.frame(juntendo)
+# juntendo <- cbind(date,juntendo)
+# 
+# keisho <- as.data.frame(keisho)
+# keisho <- cbind(date,keisho)
+```
+
+
+## モデルの定義と実行
+
+ - ローカルレベルモデルを適用する
+ 
+$$
+\mu_t = \mu_{t-1} + \omega_t, \omega_t \sim Normal(0,\sigma_{\omega}^2) \\
+y_t = \mu_t + v_t, v_t \sim Normal(0,\sigma_{v}^2)
+$$
+
+```{r}
+library(rstan)
+library(bayesplot)
+
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+source("plotSSM.Rmd",encoding = "utf-8")
+```
+
+```{r}
+# データの準備
+data_list <- list(
+  y = as.numeric(as.character(tdata$東京健生病院)),
+  T = nrow(tdata),
+  pred_term = 3
+)
+
+# モデルの推定
+local_lebel_stan <- stan(
+  file = "locallevel.stan",
+  data = data_list,
+  iter = 2500,
+  warmup = 1000,
+  thin = 1,
+  chains = 3,
+  seed = 1
+)
+```
+
+```{r}
+data_plot <- seq(
+  from = as.POSIXct("2016-11-04"),
+  by = "days",
+  len = 9
+)
+```
+
+```{r}
+# 生成された変数を格納
+mcmc_sample_pred <- rstan::extract(local_lebel_stan)
+# 予測結果の図示
+plotSSM(
+  mcmc_sample = mcmc_sample_pred,
+  time_vec = data_plot,
+  state_name = "mu_pred",
+  graph_title = "予測の結果(東京健生病院)",
+  y_label = "乗車数"
+)
+```
+
+```{r}
+# local_lebel_stan
+```
+
+```{r}
+traceplot(local_lebel_stan,pars = c("s_v","s_w"))
+```
+
+```{r}
+# summary(local_lebel_stan)
+```
+
+```{r}
+# plot(t(data),pch = 16, type = "p", main = "1kmメッシュ内にある病院周辺でのタクシー乗車数の推移")
+```

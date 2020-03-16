@@ -1,0 +1,27 @@
+---
+title: "Heatmap_taxi_and_hospital"
+author: "Kenta Sakamoto"
+date: "2019/12/18"
+output: html_document
+---
+
+# 目的
+ - タクシーの乗車についてヒートマップを作成する
+ - 意識することは乗車率を時間的な推移でみること
+ - 例) 2017年9月13日(水)を8時~12時、12時~19時で分けて、それぞれの時間帯で一時間ごとのタクシーの乗車数を病院周辺で記録し、台数が多いと濃くなるように実装する
+ 
+# データの読み込み
+ - 病院の位置データ
+ - タクシーデータ(2016年9月)
+```{r}
+hospital <- read.csv("../data/tokyo_hospital3.csv",row.names = 1)
+taxi <- read.csv("../data/JR20160411_ridingon.csv",row.names = 1)
+```
+
+# ヒートマップ
+```{r}
+library(leaflet)
+library(leaflet.extras)
+
+leaflet(taxi) %>% addTiles() %>% setView(lat =	35.681382,lng = 139.76608399999998,zoom=7) %>% addWebGLHeatmap(lng=~LONGITUDE , lat=~LATITUDE,size=20,units='px') 
+```

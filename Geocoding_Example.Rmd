@@ -1,0 +1,39 @@
+---
+title: "Geocoding3"
+author: "Kenta Sakamoto"
+date: "2019/11/21"
+output: html_document
+---
+
+# ライブラリーのインストール
+```{r}
+library(ggmap)
+library(tidyverse)
+library(dplyr)
+register_google("your api key")
+has_google_key() 
+```
+
+# データの読み込みとデータ型を"characterに変更する
+```{r}
+hos <- read.csv("tokyo_hospital2.csv",row.names = 1)
+hos$住所 <- as.character(hos$住所)
+```
+
+```{r}
+hos_address <- geocode(hos$住所)
+```
+
+```{r}
+colnames(hos_address) <- c("lng","lat")
+hos_address <- hos_address[,c(2,1)]
+```
+
+```{r}
+hos <- cbind(hos,hos_address)
+```
+
+# データとして出力する
+```{r}
+write.csv(hos, "tokyo_hospital3.csv")
+```

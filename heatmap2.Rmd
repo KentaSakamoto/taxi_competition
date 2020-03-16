@@ -1,0 +1,18 @@
+---
+title: "heatmap"
+author: "橋口舜弘"
+date: "2019/12/19"
+output: html_document
+---
+
+```{r}
+data <- read.csv("20160411_for_plot.csv")
+
+library(leaflet)
+#install.packages("leaflet.extras")
+library(leaflet.extras)
+leaflet(data[data$id==2,]) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addWebGLHeatmap(lng=~LONGITUDE,lat=~LATITUDE,size=8,units='px')
+```
+

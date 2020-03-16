@@ -1,0 +1,92 @@
+---
+title: "StateSpaceData"
+author: "Kenta Sakamoto"
+date: "2020/1/18"
+output: html_document
+---
+
+# 状態空間モデルのためのデータを作成する
+
+## 病院データのメッシュコードを作成する
+```{r}
+source("http://www.fttsus.jp/worldmesh/R/worldmesh.R")
+hos <- read.csv("../data/tokyo_hospital3.csv",header = T,row.names = 1)
+meshcode <- vector()
+for(i in 1:nrow(hos)) {
+  meshcode[i] <- cal_meshcode(hos[i,6],hos[i,7])
+}
+
+meshcode <- as.data.frame(meshcode)
+hos <- cbind(hos,meshcode)
+write.csv(hos,file = "../data/hospital.csv")
+```
+
+## 文京区の病院のみを抽出する
+```{r}
+hos <- hos[grep("^東京都文京区", hos$住所),]
+write.csv(hos,file = "../data/bunkyo_hospital.csv")
+```
+
+## 病院周りのタクシーの乗車数を算出する
+### データの読み込み
+```{r}
+JR20161104flag <- read.csv("../data/JR20161109flag.csv",row.names = 1)
+JR20161104flag <- JR20161104flag[,-1]
+```
+
+### 病院ごとの乗車数を算出する
+```{r}
+library(Rcpp)
+sourceCpp("meshcode.cpp")
+```
+
+```{r}
+ex <- ride_on_data(nrow(hos),nrow(JR20161104flag),hos,JR20161104flag)
+```
+
+```{r}
+res <- list()
+cnt = 0
+for(i in 1:nrow(hos)) {
+  for (j in 1:nrow(JR20161104flag)) {
+    if (hos[i,8] == JR20161104flag[j,6]) {
+      cnt = cnt + 1;
+    }
+    res[i] = cnt
+  }
+}
+```
+
+```{r}
+res1 <- res[[1]]
+res2 <- res[[2]] 
+res3 <- res[[3]] 
+res4 <- res[[4]] 
+res5 <- res[[5]] 
+res6 <- res[[6]] 
+res7 <- res[[7]] 
+```
+
+```{r}
+cnt2 <- res2 - res1
+cnt3 <- res3 - res2
+cnt4 <- res4 - res3
+cnt5 <- res5 - res4
+cnt6 <- res6 - res5
+cnt7 <- res7 - res6
+```
+
+```{r}
+cnt <- c(res1,cnt2,cnt3,cnt4,cnt5,cnt6,cnt7)
+cnt <- as.data.frame(cnt)
+colnames(cnt) <- c("1109")
+```
+
+```{r}
+hos <- cbind(hos,cnt)
+```
+
+```{r}
+write.csv(hos,file = "../data/bunkyo_hos.csv")
+```
+

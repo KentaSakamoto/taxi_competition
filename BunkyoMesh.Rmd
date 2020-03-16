@@ -1,0 +1,24 @@
+---
+title: "BunkyoMesh"
+author: "Kenta Sakamoto"
+date: "2020/1/17"
+output: html_document
+---
+
+```{r}
+library(leaflet)
+library(dplyr)
+library(xml2)
+library(sf)
+```
+
+```{r}
+shape <- read_sf("../data/shape")
+```
+
+```{r}
+x <- read_sf("../data/shape/L03-b-16_5340-tky.xml")
+```
+
+
+

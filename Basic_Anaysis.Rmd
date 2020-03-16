@@ -1,0 +1,226 @@
+---
+title: "Basic_Anaysis"
+author: "Kenta Sakamoto"
+date: "2020/1/13"
+output: html_document
+---
+
+# 目的
+ - 病院周辺のタクシー乗車の台数を算出する
+
+# 方法
+ - 病院とタクシー乗車の距離を比較し、$x$km以下であれば個数にカウントする
+
+# 実装
+## データとパッケージ
+```{r}
+library(geosphere)
+
+JR201611 <- read.csv("../data/JR201611_frag.csv",row.names = 1)
+hospital <- read.csv("../data/tokyo_hospital3.csv",row.names = 1)
+```
+
+## 病院のデータを八王子市に限定する
+```{r}
+hachioji <- subset(hospital,grepl("八王子",hospital$住所))
+hachioji_dist <- hachioji[,c(7,6)]
+```
+
+## 病院のデータを中野区に限定する
+```{r}
+nakano <- subset(hospital,grepl("中野",hospital$住所))
+nakano_dist <- nakano[,c(7,6)]
+```
+
+```{r}
+library(geosphere)
+
+res1 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(nakano_dist[1,],JR201611_rideon_dist[i,]) <= 3000) {
+    res1 = res1 + 1
+  }
+}
+
+res2 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(nakano_dist[2,],JR201611_rideon_dist[i,]) <= 3000) {
+    res2 = res2 + 1
+  }
+}
+
+res3 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(nakano_dist[3,],JR201611_rideon_dist[i,]) <= 3000) {
+    res3 = res3 + 1
+  }
+}
+```
+
+```{r}
+res <- c(res1,res2,res3)
+name <- nakano$病院名
+w <- data.frame(病院名 = name,res)
+View(w)
+```
+
+```{r}
+cnt <- c(cnt1,cnt2,cnt3,cnt4,cnt5,cnt6,cnt7,cnt8,cnt9)
+name <- hachioji$病院名
+y <- data.frame(病院名 = name,乗車数 = cnt)
+```
+
+## タクシー乗車データに限定する
+```{r}
+JR201611_rideon <- subset(JR201611,grepl("乗車",JR201611$flag))
+JR201611_rideon_dist <- JR201611_rideon[,c(2,3)]
+```
+
+## それぞれの病院とタクシー乗車との距離を算出する
+### 永生病院との距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt1 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[1,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt1 = cnt1 + 1
+  }
+}
+```
+
+> cnt : 1 
+
+### 相武病院との距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt2 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[2,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt2 = cnt2 + 1
+  }
+}
+```
+
+> cnt : 1
+
+### 東京天使病院との距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt3 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[3,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt3 = cnt3 + 1
+  }
+}
+```
+
+> cnt : 1
+
+### 八王子消化器病院との距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt4 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[4,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt4 = cnt4 + 1
+  }
+}
+```
+
+> cnt : 6
+
+### 右田病院との距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt5 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[5,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt5 = cnt5 + 1
+  }
+}
+```
+
+> cnt : 11
+
+### 南多摩病院との距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt6 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[6,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt6 = cnt6 + 1
+  }
+}
+```
+
+> cnt : 2
+
+### みなみ野病院との距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt7 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[7,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt7 = cnt7 + 1
+  }
+}
+```
+
+> cnt : 2
+
+### 東京医科大学八王子医療センターとの距離が3km圏内のデータの個数をカウントする
+```{r}
+cnt8 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[8,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt8 = cnt8 + 1
+  }
+}
+```
+
+> cnt : 0
+
+### 仁和会総合病院との距離が5km圏内のデータの個数をカウントする
+```{r}
+cnt9 <- 0
+for(i in 1:nrow(JR201611_rideon_dist)) {
+  if (distGeo(hachioji_dist[9,],JR201611_rideon_dist[i,]) <= 5000) {
+    cnt9 = cnt9 + 1
+  }
+}
+```
+
+> cnt : 12
+
+### 上記の結果をまとめる
+11/4 ~ 9で病院から半径3km圏内でのタクシー乗車数は以下の通りになった
+```{r}
+cnt <- c("1","1","1","6","11","2","6","0","12")
+name <- hachioji$病院名
+x <- data.frame(病院名 = name,乗車数 = cnt)
+```
+
+11/4 ~ 9で病院から半径5km圏内でのタクシー乗車数は以下の通りになった
+```{r}
+cnt <- c(cnt1,cnt2,cnt3,cnt4,cnt5,cnt6,cnt7,cnt8,cnt9)
+name <- hachioji$病院名
+y <- data.frame(病院名 = name,乗車数 = cnt)
+```
+
+11/4 ~ 9で病院から半径$x$km圏内でのタクシー乗車数の変化
+```{r}
+cntx <- c("1","1","1","6","11","2","6","0","12") 
+cnty <- c(cnt1,cnt2,cnt3,cnt4,cnt5,cnt6,cnt7,cnt8,cnt9)
+z <- data.frame("3km" = cntx, "5km" = cnty)
+rownames(z) <- hachioji$病院名
+z
+```
+
+### 上記より二重ループを用いて八王子市にあるすべての病院から3km圏内にあるタクシー乗車数を算出する
+```{r}
+res <- list()
+
+for (i in 1:nrow(hachioji_dist)) {
+  for(j in 1:nrow(JR201611_rideon_dist)) {
+    if(distGeo(hachioji_dist[i,],JR201611_rideon_dist[j,])) {
+      res[i] = res[i] + 1
+    }
+  }
+}
+```
+
+# 参考
+https://id.fnshr.info/2018/05/19/geosphere1  Rのgeosphereパッケージ(1)：2点間の距離と方位角を計算する

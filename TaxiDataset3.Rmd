@@ -1,0 +1,145 @@
+---
+title: "TaxiDataset3"
+author: "Kenta Sakamoto"
+date: "2019/12/20"
+output: html_document
+---
+
+# 目的
+ - タクシーデータを加工しやすいようにデータ加工を行う
+ - BiqQueryのデータの内の一週間を病院が開いている平日と午前8時から午後7時ごろまでのデータとして抽出する
+ - イメージ : JR20160401.csv
+
+# データ加工
+## データの読み取り
+```{r}
+library(data.table)
+JR20161104 <- fread("../data/JR20161104.csv",stringsAsFactors=FALSE, encoding="UTF-8",sep = ",",header = TRUE)
+JR20161105 <- fread("../data/JR20161105.csv",stringsAsFactors=FALSE, encoding="UTF-8",sep = ",",header = TRUE)
+JR20161106 <- fread("../data/JR20161106.csv",stringsAsFactors=FALSE, encoding="UTF-8",sep = ",",header = TRUE)
+JR20161107 <- fread("../data/JR20161107.csv",stringsAsFactors=FALSE, encoding="UTF-8",sep = ",",header = TRUE)
+JR20161108 <- fread("../data/JR20161108.csv",stringsAsFactors=FALSE, encoding="UTF-8",sep = ",",header = TRUE)
+JR20161109 <- fread("../data/JR20161109.csv",stringsAsFactors=FALSE, encoding="UTF-8",sep = ",",header = TRUE)
+```
+
+```{r}
+JR20161104 <- JR20161104[,c(-1,-2)]
+JR20161105 <- JR20161105[,c(-1,-2)]
+JR20161106 <- JR20161106[,c(-1,-2)]
+JR20161107 <- JR20161107[,c(-1,-2)]
+JR20161108 <- JR20161108[,c(-1,-2)]
+JR20161109 <- JR20161109[,c(-1,-2)]
+```
+
+## 可視化用のデータセットを作成する
+### それぞれのドライバーナンバーに対応した行番号を抽出し、リストにまとめる
+```{r}
+library(Rcpp)
+sourceCpp("func1.cpp")
+
+nval <- unique(JR20161104[,6])
+JR20161104_vec <- as.vector(JR20161104[,6])
+rowinfo <- loop(nrow(nval),nrow(JR20161104),nval,JR20161104_vec)
+```
+
+### データセットの作成
+```{r}
+JR2016_datasets <- list()
+#for (k in 1:43) {
+#  assign(paste("data", k, sep=""),alldata[row_info[[k]],])
+#}
+
+for (k in 1:8799) {
+  JR2016_datasets[[k]] <- JR2016[rowinfo[[k]],]
+}
+#all_datasets[[1]]
+```
+
+### 使わない変数を削除
+```{r}
+rm(list=ls()[!(ls() %in% c("JR2016_datasets"))])
+```
+
+### 上記のデータを出力する
+```{r}
+save(JR2016_datasets,file = "../data/JR20160411_datasets.RData")
+```
+
+#プロット用フラグ付きデータを作成(8GBメモリ、低電圧版8世代Core i5で15分くらいかかった)
+```{r}
+ptm <- proc.time() #時間を計測
+#flag_data <- list()
+idvec <- c()
+flag_ri <- c()
+lng <- c()
+lat <- c()
+for (i in 1:8799) {
+  row_data <- c()
+#  flag_ri <- c()
+  if(nrow(JR20160411_datasets[[i]])==1){ #1行のみのデータを例外とする
+    
+  }else{
+    for (j in 1:(nrow(JR20160411_datasets[[i]]))) {
+      if ((JR20160411_datasets[[i]][j,15] == "実車"  || JR20160411_datasets[[i]][j,15] == "賃走") && (JR20160411_datasets[[i]][j,15] != "実車"  || JR20160411_datasets[[i]][j,15] != "賃走")){
+        flag_ri <- c(flag_ri,"降車")
+        row_data <- c(row_data,j+1)
+        idvec <- c(idvec,1)
+      } else if((JR20160411_datasets[[i]][j,15] != "実車"  || JR20160411_datasets[[i]][j,15] != "賃走") && (JR20160411_datasets[[i]][j,15] == "実車"  || JR20160411_datasets[[i]][j,15] == "賃走")){
+        flag_ri <- c(flag_ri,"乗車")
+        row_data <- c(row_data,j+1)
+        idvec <- c(idvec,2)
+      }else{
+        #flag_ri <- c(flag_ri,NA)
+        #row_data <- c(row_data,j+1)
+      }
+    }
+  }
+  #flag_data[[i]] <- data.frame(flag = flag_ri,time = JR20160411_datasets[[i]][row_data,13])
+  lng <- c(lng,as.vector(JR20160411_datasets[[i]][row_data,10])) #経度
+  lat <- c(lat,as.vector(JR20160411_datasets[[i]][row_data,9])) #緯度
+}
+dfflag_data <- data.frame(id = idvec,LONGITUDE = lng,LATITUDE = lat,flag = flag_ri)
+proc.time() - ptm #計測終了
+```
+
+### プロット用フラグ付きデータを作成(8GBメモリ、低電圧版8世代Core i5で15分くらいかかった)
+
+```{r}
+load("../data/JR20160411_datasets.RData")
+```
+
+```{r}
+ptm <- proc.time() #時間を計測
+#flag_data <- list()
+# idvec <- c()
+flag_ri <- c()
+lng <- c()
+lat <- c()
+for (i in 1:8799) {
+  row_data <- c()
+#  flag_ri <- c()
+  if(nrow(JR20160411_datasets[[i]])==1){ #1行のみのデータを例外とする
+  }else{
+    for (j in 1:(nrow(JR20160411_datasets[[i]])-1)) {
+      if((JR20160411_datasets[[i]][j,15] != "実車"  || JR20160411_datasets[[i]][j,15] != "賃走") && (JR20160411_datasets[[i]][j,15] == "実車"  || JR20160411_datasets[[i]][j,15] == "賃走")){
+        flag_ri <- c(flag_ri,"乗車")
+        row_data <- c(row_data,j+1)
+        # idvec <- c(idvec,2)
+      }
+    }
+  }
+  #flag_data[[i]] <- data.frame(flag = flag_ri,time = JR20160411_datasets[[i]][row_data,13])
+  lng <- c(lng,as.vector(JR20160411_datasets[[i]][row_data,10])) #経度
+  lat <- c(lat,as.vector(JR20160411_datasets[[i]][row_data,9])) #緯度
+}
+# dfflag_data <- data.frame(id = idvec,LONGITUDE = lng,LATITUDE = lat,flag = flag_ri)
+
+# proc.time() - ptm #計測終了
+```
+
+### 乗車フラグと位置情報を残したデータを出力する
+```{r}
+write.csv(dfflag_data,file = "../data/JR20160411_ridingon.csv")
+save(dfflag_data,file = "../data/JR20160411_ridingon.RData")
+```
+
